@@ -33,7 +33,7 @@ global/iam/policies/{terraform-base.tf,permission-boundary.tf}
 global/iam/attach.tf
 global/iam/break-glass.tf
 global/org-policies/{guardrails.tf,quotas.tf,scp.tf}
-modules/network/outputs.tf
+modules/network/{outputs.tf,variables.tf,main.tf}
 modules/security/outputs.tf
 modules/shared/locals.tf
 modules/shared/naming/locals.tf

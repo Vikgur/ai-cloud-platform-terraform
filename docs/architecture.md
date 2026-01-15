@@ -330,6 +330,7 @@ IAM не может обойти SCP
 
 Вспомогательные абстракции.
 
+Состав:
 labels/ — стандартные labels
 naming/ — единые имена ресурсов
 tags/ — cost/allocation
@@ -352,7 +353,237 @@ modules/shared — это инфраструктурный язык компан
 – невозможный аудит
 – плохой DevSecOps
 
+Cмысл modules/shared:
+Все ресурсы одинаково именованы
+Все ресурсы тегированы
+Любой ресурс можно отследить
+Compliance автоматизируется
+
+Это фундамент для:
+– billing
+– audit
+– incident response
+
 ### modules/shared/naming
+
+Назначение
+– стандартизировать имена ресурсов
+– избежать коллизий
+– упростить аудит и поиск
+
+#### modules/shared/naming/locals.tf
+
+Пояснение:
+– org — организация
+– project — продукт
+– env — окружение
+
+Итог:
+org-project-env
+
+Пример:
+acme-health-prod
+
+#### modules/shared/naming/variables.tf
+
+Почему явно задано:
+– никаких magic values
+– читаемость
+– reuse
+
+#### modules/shared/naming/outputs.tf
+
+Использование:
+– все ресурсы именуются через этот prefix
+
+### modules/shared/tags
+
+Назначение
+– cost allocation
+– ownership
+– audit
+– security
+
+Теги — обязательны в enterprise.
+
+#### modules/shared/tags/locals.tf
+
+Пояснение:
+– ManagedBy — автоматический аудит
+– Owner — ответственность
+– CostCenter — финансы
+
+#### modules/shared/tags/variables.tf
+
+#### modules/shared/tags/outputs.tf
+
+Используется в каждом ресурсе.
+
+### modules/shared/labels
+
+Назначение
+– Kubernetes
+– Cloud-native metadata
+– observability
+
+Labels ≠ tags.
+Они живут дольше и глубже.
+
+Состав:
+- `modules/shared/labels/locals.tf`
+- `modules/shared/labels/variables.tf`
+- `modules/shared/labels/outputs.tf`
+
+### modules/shared/locals.tf
+
+Назначение
+– глобальные вычисляемые значения
+– reuse между модулями
+
+#### modules/shared/locals.tf
+
+Пояснение:
+– логика окружений централизована
+– no copy-paste
+– предсказуемое поведение
+
+---
+
+## modules/network
+
+Сетевой необратимый фундамент.
+
+Состав:
+
+- vpc/ — VPC/VNet
+- subnets/ — публичные/приватные
+- nat/ — outbound-доступ
+- routing/ — route tables
+- main.tf — реализация сети: VPC, сабнеты, маршруты, NAT
+- variables.tf — входные параметры сети (CIDR, AZ, флаги)
+- outputs.tf — экспорт сетевых идентификаторов для других модулей
+
+Он решает:
+– изоляцию окружений
+– control / data plane separation
+– ingress / egress контроль
+– blast radius
+– zero-trust основу
+
+Best practices:
+– меняется редко
+– проектируется заранее
+– отделена от compute и security логически
+
+Ответственности:
+– VPC
+– Subnets (public / private)
+– Internet Gateway
+– NAT Gateway
+– Route Tables
+
+Внутреннее дробление (vpc/, subnets/, nat/, routing/) показано концептуально. В enterprise-платформах эти части выносятся в отдельные подмодули. В текущем проекте используется единый модуль network с одной ответственностью.
+
+DevSecOps-смысл network
+
+Что обеспечено:
+– network isolation
+– минимальный attack surface
+– predictable routing
+– соответствие zero-trust модели
+
+Без network-модуля:
+– security невозможна
+– kubernetes нестабилен
+
+Итог
+
+modules/network — это:
+– первый реально создающий ресурсы модуль
+– фундамент всей платформы
+– точка, где ошибки самые дорогие
+
+### modules/network/variables.tf
+
+Назначение
+– явно задать сетевую модель
+
+Реализация:
+– сеть параметризуема
+– легко менять размер
+– удобно для dev/stage/prod
+
+### modules/network/main.tf
+
+VPC
+"aws_vpc" "this"
+Пояснение:
+– DNS обязателен для Kubernetes
+– один VPC = одно окружение
+– теги обязательны
+
+Internet Gateway
+"aws_internet_gateway" "this"
+Зачем:
+– доступ из public subnet в интернет
+– ingress точка
+
+Public Subnets
+"aws_subnet" "public"
+Пояснение:
+– ALB, NAT, bastion
+– public IP разрешён
+– минимум ресурсов
+
+Private Subnets
+"aws_subnet" "private"
+Пояснение:
+– worker nodes
+– базы
+– no public IP
+– основная зона безопасности
+
+NAT Gateway
+"aws_eip" "nat"
+Пояснение:
+– private → internet
+– обновления
+– outbound only
+– single NAT для портфолио (в prod часто per-AZ)
+
+Route Tables
+Public:
+"aws_route_table" "public"
+Private:
+"aws_route_table" "private"
+Пояснение:
+– чёткий ingress / egress
+– private не знает про IGW
+– public не имеет NAT
+
+### modules/network/outputs.tf
+
+Зачем:
+– используется compute
+– используется security
+– используется kubernetes
+
+---
+
+## modules/security
+
+Сетевая и perimeter-безопасность.
+
+Состав:
+
+- security-groups/ — правила доступа
+- nsg/ — cloud-native аналоги
+- firewall/ — WAF, FW
+
+
+
+
+
 
 
 
@@ -367,10 +598,8 @@ global/backend
 
 global/iam
 – кто имеет право его менять
-
 Без global/iam:
 – Terraform = опасный скрипт
-
 С global/iam:
 – Terraform = управляемая платформа
 
