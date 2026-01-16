@@ -1,3 +1,21 @@
+architecture.md
+Структура репозитория (modules/, policies/, scripts/, helm/values/ и т.д.)
+Назначение каждого блока/каталога
+Взаимосвязь между слоями: cloud / infra / AI / CI/CD / governance
+High-level диаграмма infra + AI платформы
+
+Содержит обзор всех папок и компонентов
+Ссылки на:
+security-model.md (для понимания, какие границы и политики применяются)
+workflows.md (для понимания, как инфра меняется и продвигается)
+data-flows.md (для понимания, куда идут данные)
+
+_
+
+decision-driven (почему так)
+AI Cloud Architecture (GPU, data zones, trust boundaries)
+_
+
 # global/
 
 Назначение: общие ресурсы организации. Создаются один раз.
@@ -902,6 +920,169 @@ Join workers
 – передача в Ansible / GitOps
 – auditability
 – автоматизация
+
+## modules/access
+
+Слой идентификации и управления доступом.
+
+Состав:
+
+- `iam/` — управление Cloud IAM (пользователи, роли, политики)  
+- `oidc/` — федерация, GitHub OAuth, SSO интеграции  
+- `rbac/` — Kubernetes RBAC (роли, binding’и)  
+- `main.tf` — реализация ресурсов доступа и связей между ними  
+- `variables.tf` — входные параметры доступа (пользователи, роли, права)  
+- `outputs.tf` — экспорт идентификаторов ролей, binding’ов и OIDC-конфигураций
+
+Он отвечает:
+– кто имеет право
+– откуда приходит идентификация
+– как доступ маппится в Kubernetes
+
+Это не IAM-файлы, а access architecture.
+
+Архитектурная роль
+
+Разделение ответственности (по best practice):
+
+Cloud access ≠ Kubernetes access ≠ Human access
+
+Поэтому три подпапки:
+– iam
+– oidc
+– rbac
+
+Что делает L2-модуль access;
+– собирает identity-слой целиком
+– связывает cloud ↔ k8s
+– экспортирует контракты для CI и GitOps
+
+DevSecOps-смысл modules/access
+
+Этот модуль:
+– убирает static secrets
+– вводит federated trust
+– разделяет ответственность
+– готовит GitOps
+
+Без него:
+Terraform = root
+Kubernetes = хаос
+
+Итог
+
+modules/access — это:
+– identity как система
+– не набор ролей
+– enterprise-обязательный слой
+
+### modules/access/main.tf
+
+Пояснение:
+– жёсткое разделение зон ответственности
+– каждый слой можно менять независимо
+– никакой мешанины ролей
+
+### modules/access/variables.tf
+
+Пояснение:
+– access всегда environment-aware
+– нет глобальных ролей «на всё»
+
+### modules/access/outputs.tf
+
+Пояснение:
+– используется CI
+– используется GitOps
+– единая точка интеграции
+
+### modules/access/iam/
+
+Cloud-level identity.
+
+Отвечает:
+– кто может менять инфраструктуру
+– откуда приходят креды
+– как ограничен blast radius
+
+Наполнение: 
+– terraform execution role
+– ci role (OIDC)
+– break-glass role
+
+Почему iam отдельно:
+– cloud identity живёт дольше кластера
+– она критична
+– её нельзя смешивать с k8s
+
+#### modules/access/iam/main.tf
+
+Пояснение:
+– отдельная роль под Terraform
+– не используется людьми
+– легко аудитится
+
+### modules/access/oidc/
+
+Federated identity.
+
+Решает:
+– CI без секретов
+– GitOps без ключей
+– traceable access
+
+Наполнение:
+– OIDC provider (напрмиер GitHub, Argo CD)
+– trust policy
+– ограничение audience
+
+Почему oidc — отдельный слой
+
+OIDC:
+– используется и CI
+– и GitOps
+– и людьми
+
+Это identity backbone, а не частность.
+
+#### modules/access/oidc/
+
+Пояснение:
+– стандарт GitHub OIDC
+– без long-lived secrets
+– enterprise best practice
+
+### modules/access/rbac/
+
+Kubernetes-level access.
+
+RBAC решает:
+– кто admin
+– кто readonly
+– кто cicd
+
+Cloud IAM не управляет pod’ами.
+
+Наполнение:
+– ClusterRole
+– RoleBinding
+– mapping OIDC → RBAC
+
+Почему RBAC не в GitOps (пока)
+
+Потому что:
+– сначала нужен identity
+– потом access model
+– потом GitOps
+
+Иначе получится lockout.
+
+#### ### modules/access/rbac/
+
+Пояснение:
+– минимальные права
+– принцип least privilege
+– platform-safe
 
 
 

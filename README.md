@@ -1,9 +1,52 @@
+Принцип взаимосвязи в docs/:
+architecture.md — обзор, точка входа
+security-model.md — концептуальные угрозы + контролы
+state-backend.md + workflows.md — lifecycle infra, state, promotion
+break-glass.md — экстренный доступ
+data-flows.md — визуализация потоков данных, с ссылками на контролы и workflow
+
+---
+
+What problem this platform solves
+How a senior DevSecOps uses it
+What risks it mitigates
+
+Инженерное решение:
+reference CI implemented
+real execution demonstrated in GitHub Actions (health-api)
+stages and controls are equivalent
+
+---
+
 # О проекте
 
 Этот репозиторий — эталонная архитектура Terraform для enterprise-уровня на базе AWS. Он показывает, как с нуля спроектировать IaC cloud-platform под Kubernetes (3 master / 50+ worker) с упором на безопасность, масштабируемость и управляемость.
 
+Ключевые акценты DevSecOps
+– Remote backend + locking
+– IAM least privilege
+– OPA / Checkov / tfsec обязательны
+– Полная изоляция state по environment
+– CI запрещает apply без review
+
+Чеклист корректной архитектуры
+– Нет ресурсов в root
+– Все ресурсы через modules
+– Environments не содержат логики
+– Security и access — отдельные домены
+– Подготовка под GitOps (например ArgoCD)
+
+Эта структура закрывает:
+– масштаб (50+ нод → 500+)
+– безопасность
+– аудит
+– прод без переделок
+
 **Реализованы принципы best practice:**
 
+- Реализована двухуровневая архитектура модулей:
+    - L2-модуль (агрегирующий)
+    - L3-модули (атомарные, переиспользуемые)
 - Жёсткое разделение слоёв: `global` → `modules` → `environments`.
 - Один модуль = одна ответственность.
 - Remote state с изоляцией по окружениям.
@@ -18,12 +61,41 @@
 - Growth-ready: поддержка сотен нод без рефакторинга архитектуры.
 - Kubernetes разворачивается на уровне Terraform: инициализация control-plane и worker-нод происходит автоматически при создании `compute`, до применения Ansible.
 
-**Этапы реализации:**
+
+Наполнение
+
+L2-модуль (реализовано):
+– описывает архитектуру целиком
+– оркестрирует L3
+– экспортирует единые outputs
+
+L3-модули (запланировано):
+– делают одну конкретную вещь
+– не знают о всей системе
+– максимально переиспользуемы
+
+Пример:
+
+modules/network — L2 
+modules/network/vpc — L3
+modules/network/subnets — L3
+modules/network/nat — L3
+modules/network/routing — L3
+
+L3-модули в modules/access наполнены для демонстрации реальных enterprise-практик управления доступом. Остальные L3-модули оставлены пустыми для фокусировки на ключевых кейсах и поэтапной разработке проекта.
+
+
+# Этапы реализации
+
+## 1 этап: ДО внедрения поддержки Sovereign AI-слоя
 
 1. Проектирование архитектуры 
 
 Фундамент планирования.
-Практическая реализация: скрипт `scrips/architecture_bootstrap.sh`
+
+Реализация:
+
+Скрипт `scrips/architecture_bootstrap.sh`
 
 2. Инфраструктура для хранения 
 
@@ -117,15 +189,53 @@ Kubernetes-модуль это:
 – чёткая граница Terraform / Ansible
 – zero-click join нод
 
-4. 
+3.6 Наполнение `modules/access`
+
+Слой идентификации и управления доступом.
+
+Решает задачи:
+- Связывает Cloud IAM, OIDC/SSO и Kubernetes RBAC  
+- Убирает статические секреты и вводит federated trust  
+- Разделяет ответственность: cloud ≠ k8s ≠ human access  
+- Экспортирует идентификаторы и конфигурации для CI/CD и GitOps  
+- Формирует enterprise-identity слой как основу DevSecOps
+
+3.7 modules/observability/
+
+4. ci/
+
+5. policies/
+
+Отдельный слой:
+scripts/
+
+
+
+## 2 этап: внедрение поддержки Sovereign AI-слоя:
+
+1. foundation-расширения для AI:
+global/iam/ai-roles/
+modules/compute/gpu/
+modules/kubernetes/ai-node-pools/
+modules/kubernetes/runtime-constraints/
+policies/{opa,checkov,tfsec}/ai/
+
+2. Sovereign AI слой (ai/*)
+
+3. Sovereign AI слой Governance / enforcement (governance/*)
+ai/ и governance/
 
 
 
 
 
+Наполнение L3-модулей:
+L3-модули в modules/access наполнены для демонстрации реальных enterprise-практик управления доступом. Остальные L3-модули оставлены пустыми для фокусировки на ключевых кейсах и поэтапной разработке проекта.
 
 
-# Структура
+
+
+# Структура (ДОПОЛНИТЬ И АКТУАЛИЗИРОВАТЬ)
 
 ### README.md
 Точка входа.  
@@ -184,6 +294,8 @@ CI/CD пайплайны.
 - plan.sh — стандартный plan
 - apply.sh — контролируемый apply
 - architecture_bootstrap.sh — создание структуры каталогов проекта
+- ai_architecture_bootstrap.sh — добавление каталогов проекта под AI
+
 
 ### .terraform-version
 Фиксация версии Terraform. Репродуцируемость.
