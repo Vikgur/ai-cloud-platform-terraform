@@ -1084,6 +1084,168 @@ Cloud IAM не управляет pod’ами.
 – принцип least privilege
 – platform-safe
 
+---
+
+## mmodules/observability
+
+Инфраструктурный слой наблюдаемости.
+
+Состав:
+
+- `logging/` — сбор и хранение логов  
+- `monitoring/` — метрики и alerting  
+- `tracing/` — распределённые трейсы и трассировка запросов  
+- `main.tf` — реализация ресурсов наблюдаемости и интеграций  
+- `variables.tf` — параметры конфигурации логирования, метрик и трейсов  
+- `outputs.tf` — экспорт endpoint’ов, dashboard’ов и ключевых идентификаторов
+
+Он отвечает:
+– где хранятся логи
+– где живут метрики
+– куда пишутся трейсы
+
+Он не отвечает:
+– за дашборды приложений
+– за алерты конкретных сервисов
+
+Это платформа, не продукт.
+
+Архитектурная роль
+
+Observability начинается до Kubernetes workloads.
+
+Best practices:
+– сначала infra-backends
+– потом агенты
+– потом Grafana
+– потом SLO
+
+Что делает L2-модуль observability
+
+– собирает backends
+– задаёт стандарты
+– экспортирует endpoints
+– не зависит от конкретных приложений
+
+Почему observability — infra, а не Helm
+
+Потому что:
+– backend живёт дольше кластера
+– данные критичнее подов
+– storage = зона риска
+
+Агенты и Helm — следующий слой.
+
+DevSecOps-смысл modules/observability
+
+Этот модуль:
+– даёт контроль
+– обеспечивает аудит
+– позволяет расследовать инциденты
+
+Без него:
+– нет postmortem
+– нет SLO
+– нет доверия к платформе
+
+Итог
+
+modules/observability — это:
+– фундамент наблюдаемости
+– vendor-agnostic
+– platform-level
+– обязательный для prod
+
+### modules/observability/main.tf
+
+Пояснение:
+– каждый backend автономен
+– можно заменить vendor
+– единая точка подключения
+
+### modules/observability/variables.tf
+
+Пояснение:
+– observability всегда env-specific
+– retention = деньги + compliance
+
+### modules/observability/outputs.tf
+
+Пояснение:
+– используется агентами
+– используется GitOps
+– единый контракт
+
+### modules/observability/logging/
+
+Централизованные логи инфраструктуры и кластера.
+
+Решает:
+– сбор
+– хранение
+– ретеншн
+
+Не решает:
+– парсинг бизнес-логики
+
+Наполнение:
+– backend: S3 / Object Storage
+– lifecycle policy
+– encryption
+– access policy
+
+#### modules/observability/logging/main.tf
+
+Пояснение:
+– immutable storage
+– encryption by default
+– audit-ready
+
+### modules/observability/monitoring/
+
+Backend для метрик.
+
+Решает:
+– хранение time-series
+– retention
+– HA
+
+Наполнение:
+– managed metrics backend
+или
+– object storage + remote write
+
+#### modules/observability/monitoring/main.tf
+
+Пояснение:
+– decouple Prometheus от дисков
+– масштабируемость
+– disaster recovery
+
+### modules/observability/tracing/
+
+Backend для distributed tracing.
+
+Решает:
+– storage трейсов
+– долгосрочное хранение
+– анализ latency
+
+Наполнение:
+– object storage
+– индекс
+– retention
+
+#### modules/observability/tracing/main.tf
+
+Пояснение:
+– Jaeger / Tempo не теряют данные
+– дешёвое хранение
+– масштаб без боли
+
+
+
+
 
 
 ---
