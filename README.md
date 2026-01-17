@@ -366,6 +366,14 @@ AI-specific network restrictions поверх готовой network foundation.
 
 **3.3 Наполнение ai/model-registry/**
 
+Защита и изоляция AI-моделей как интеллектуального актива.  
+Управляет, где хранятся модели, кто может читать/публиковать, предотвращает утечки и отделяет training от inference.
+
+**Решает задачи:**
+- изоляция моделей от infra, данных и кода
+- контроль publish vs consume → предотвращение утечек
+- enforce mandatory encryption и versioning
+- подготовка контрактов для inference
 
 **3.4. Наполнение ai/training/**
 

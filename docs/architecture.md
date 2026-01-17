@@ -2239,9 +2239,93 @@ AI-specific network restrictions поверх готовой network foundation.
 
 ---
 
+## ai/model-registry/
 
+Защита и изоляция AI-моделей как интеллектуального актива.  
+Управляет, где хранятся модели, кто может читать/публиковать, предотвращает утечки и отделяет training от inference.
 
+**Состав:**
 
+- `models.tf` — создание boundaries для моделей  
+- `access.tf` — управление доступом (publish vs consume)  
+- `encryption.tf` — обязательное шифрование моделей  
+- `versioning.tf` — контроль версий и audit-ready логирование  
+- `variables.tf` — параметры моделей и политик доступа  
+- `outputs.tf` — экспорт идентификаторов и правил
+
+**Решает задачи:**
+- изоляция моделей от infra, данных и кода
+- контроль publish vs consume → предотвращение утечек
+- enforce mandatory encryption и versioning
+- подготовка контрактов для inference
+
+**Архитектурная роль:**
+- policy overlay поверх storage foundation  
+- IP-security слой, не storage  
+- storage foundation → ai/model-registry overlay  
+- модель ≠ данные ≠ код, регулируемый security-домен
+
+**DevSecOps-смысл `ai/model-registry/`:**
+- защита интеллектуальной собственности  
+- исключение shadow-model usage  
+- строгий model lifecycle  
+- готовность platform к regulated AI
+
+**Best practices:**
+- модель = защищённый IP  
+- separation publish/consume → anti-leak  
+- encryption + versioning → audit-ready  
+- no human access → platform-only  
+- sovereign control над моделью, не сервисом
+
+**Итог:**
+
+`ai/model-registry/`:
+- не S3  
+- не artifact store  
+- model IP security boundary
+
+### ai/model-registry/variables.tf
+
+Пояснение:
+– publish ≠ consume
+– явные роли
+– environment-scoped
+
+### ai/model-registry/models.tf
+
+Пояснение:
+– модели не удаляются автоматически
+– IP защищён от случайного уничтожения
+
+### ai/model-registry/encryption.tf
+
+Пояснение:
+– customer-managed key
+– контроль над IP
+– sovereign-ready
+
+### ai/model-registry/versioning.tf
+
+Пояснение:
+– immutability моделей
+– rollback
+– audit trail
+
+### ai/model-registry/access.tf
+
+Пояснение:
+– training публикует
+– inference читает
+– люди не при делах
+
+### ai/model-registry/outputs.tf
+
+Пояснение:
+– используется inference
+– используется governance
+
+---
 
 ---
 
