@@ -2112,6 +2112,13 @@ AI-specific network restrictions поверх готовой network foundation.
 - интегрируется с policy-as-code  
 - не ломает foundation
 
+**Best practices**
+- egress deny-by-default → прямой контроль data exfiltration
+- network overlay, не foundation → управляемая security-модель без ломки infra
+- environment-aware → готово к sovereign / multi-tenant AI
+- policy-friendly → легко ложится под audit, OPA, compliance
+- AI-specific control → нельзя «спрятать» в generic network
+
 **Итог:**
 
 `ai/network/`:
@@ -2143,9 +2150,94 @@ AI-specific network restrictions поверх готовой network foundation.
 
 ---
 
+## ai/data/
 
+Изоляция и защита datasets для AI.  
+Управляет, где лежат данные, кто имеет доступ, предотвращает утечки и обеспечивает соответствие sovereign-требованиям.
 
+**Состав:**
 
+- `datasets.tf` — создание boundaries для datasets  
+- `access.tf` — управление доступом и разрешениями  
+- `encryption.tf` — обязательное шифрование данных  
+- `lifecycle.tf` — правила жизненного цикла и compliance  
+- `variables.tf` — параметры datasets и access policies  
+- `outputs.tf` — экспорт идентификаторов и политик
+
+**Решает задачи:**
+- изоляция AI-данных от infra и кода
+- контроль доступа и предотвращение утечек
+- enforce mandatory encryption и lifecycle
+- подготовка контрактов для training / inference
+
+**Архитектурная роль:**
+- policy overlay поверх storage foundation  
+- не storage-модуль, а data-security слой  
+- storage foundation → ai/data overlay  
+- данные — актив №1, регулируемый security-домен
+
+**DevSecOps-смысл `ai/data/`:**
+- переводит данные в security-домен  
+- устраняет implicit access  
+- готовит AI-platform к регуляторике  
+- показывает зрелость работы с data risk
+
+**Best practices (reviewer view):**
+- данные изолированы от infra и кода  
+- mandatory encryption → sovereign baseline  
+- explicit principals → zero implicit trust  
+- lifecycle → compliance-ready  
+- data treated as regulated asset, не storage
+
+**Итог:**
+
+`ai/data/`:
+- не S3  
+- не бакет  
+- data security boundary для AI
+
+### ai/data/variables.tf
+
+Пояснение:
+– данные всегда environment-scoped
+– доступ только по allow-list
+– ключи не генерируются здесь
+
+### ai/data/datasets.tf
+
+Пояснение:
+– данные не ephemeral
+– удаление защищено
+– lifecycle отдельно
+
+### ai/data/encryption.tf
+
+Пояснение:
+– mandatory encryption
+– customer-managed key
+– sovereign-ready
+
+### ai/data/access.tf
+
+Пояснение:
+– явный доступ
+– нет wildcard principals
+– training ≠ inference ≠ humans
+
+### ai/data/lifecycle.tf
+
+Пояснение:
+– data retention под compliance
+– готово к audit
+– управляемо кодом
+
+### ai/data/outputs.tf
+
+Пояснение:
+– используется training / governance
+– чистый контракт
+
+---
 
 
 

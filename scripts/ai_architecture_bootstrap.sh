@@ -7,7 +7,7 @@ modules/compute/gpu
 modules/kubernetes/ai-node-pools
 modules/kubernetes/runtime-constraints
 policies/{opa,tfsec,checkov}/ai
-ai/network
+ai/{network,data}
 )
 
 for d in "${dirs[@]}"; do
@@ -24,6 +24,7 @@ policies/opa/ai/{no-public-ai.rego,ai-data-isolation.rego,ai-gpu-restrictions.re
 policies/checkov/ai/{ai_encryption.yaml,ai_network.yaml}
 policies/tfsec/ai/ai-storage.toml
 ai/network/{egress-policy.tf,variables.tf,outputs.tf}
+ai/data/{datasets.tf,access.tf,encryption.tf,lifecycle.tf,variables.tf,outputs.tf}
 )
 
 for f in "${files[@]}"; do

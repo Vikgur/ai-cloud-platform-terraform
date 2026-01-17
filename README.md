@@ -355,6 +355,14 @@ AI-specific network restrictions поверх готовой network foundation.
 
 **3.2 Наполнение ai/data/**
 
+Изоляция и защита datasets для AI.  
+Управляет, где лежат данные, кто имеет доступ, предотвращает утечки и обеспечивает соответствие sovereign-требованиям.
+
+**Решает задачи:**
+- изоляция AI-данных от infra и кода
+- контроль доступа и предотвращение утечек
+- enforce mandatory encryption и lifecycle
+- подготовка контрактов для training / inference
 
 **3.3 Наполнение ai/model-registry/**
 
