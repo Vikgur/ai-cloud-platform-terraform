@@ -2327,6 +2327,97 @@ AI-specific network restrictions поверх готовой network foundation.
 
 ---
 
+## ai/training/
+
+Изолированная training-зона для AI.  
+Управляет, где выполняется обучение, кто может запускать training, какие ресурсы разрешены и предотвращает утечки данных и моделей.
+
+**Состав:**
+
+- `namespace.tf` — создание отдельного training namespace  
+- `quotas.tf` — GPU / CPU / memory quotas  
+- `network.tf` — restricted network policy  
+- `access.tf` — контроль доступа ролями  
+- `variables.tf` — параметры ресурсов и политик  
+- `outputs.tf` — экспорт namespace и quotas
+
+**Решает задачи:**
+- изоляция training как зоны повышенного риска
+- контроль использования GPU, CPU и памяти
+- предотвращение утечек данных и моделей
+- подготовка безопасной execution-среды
+
+**Архитектурная роль:**
+- execution security слой, не ML-пайплайн  
+- kubernetes + compute foundation → ai/training overlay  
+- namespace-based isolation для multi-tenant AI
+
+**DevSecOps-смысл `ai/training/`:**
+- предотвращение утечек training data  
+- ограничение GPU abuse  
+- управление безопасностью training  
+- перевод ML в controlled execution
+
+**Best practices:**
+- training изолирован как risk-zone  
+- GPU quota → финансовый и security-контроль  
+- deny egress → защита данных и моделей  
+- execution control, не ML freedom
+
+**Итог:**
+
+`ai/training/`:
+- не ML pipeline  
+- не experiment  
+- secure execution zone для обучения AI
+
+### ai/training/variables.tf
+
+Пояснение:
+– training всегда ограничен
+– ресурсы задаются явно
+– environment-aware
+
+### ai/training/namespace.tf
+
+Пояснение:
+– отдельная зона
+– label-based governance
+– легко аудируется
+
+### ai/training/quotas.tf
+
+Пояснение:
+– защита от runaway training
+– контроль GPU как дорогого ресурса
+– платформа управляет blast radius
+
+### ai/training/network.tf
+
+Пояснение:
+– deny-by-default egress
+– training не «звонит домой»
+– data exfiltration control
+
+### ai/training/access.tf
+
+Пояснение:
+– training ≠ admin
+– минимальные права
+– platform-safe
+
+### ai/training/outputs.tf
+
+Пояснение:
+– используется CI
+– используется governance
+– единая точка интеграции
+
+---
+
+
+
+
 ---
 
 ДОПОЛНИТЬ с учетом добавления папок и файлов Sovereign AI
