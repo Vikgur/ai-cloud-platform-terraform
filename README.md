@@ -267,7 +267,7 @@ AI-специфичные IAM-роли.
 - минимальный blast radius
 - отсутствие shared-roles
 
-**2.2 modules/compute/gpu/**
+**2.2 Наполнение modules/compute/gpu/**
 
 Выделенный GPU foundation-слой.
 GPU — привилегированный ресурс, а не обычный compute.
@@ -277,13 +277,20 @@ GPU — привилегированный ресурс, а не обычный 
 - изоляция GPU как отдельного trust-domain
 - контроль доступа и масштабирования
 
-**2.3 modules/kubernetes/ai-node-pools/**
+**2.3 Наполнение modules/kubernetes/ai-node-pools/**
+
+Выделенные node pools для AI-нагрузок.  
+Жёсткое разделение CPU / GPU / general workloads.
+
+Решает задачи:
+- физическое разделение AI и general workloads
+- изоляция GPU и CPU на уровне scheduler
+- контроль размещения и масштабирования AI-нагрузок
+
+**2.4 Наполнение modules/kubernetes/runtime-constraints/**
 
 
-**2.4 modules/kubernetes/runtime-constraints/**
-
-
-**2.5 policies/{opa,checkov,tfsec}/ai/**
+**2.5 Наполнение policies/{opa,checkov,tfsec}/ai/**
 
 
 

@@ -4,6 +4,7 @@ set -e
 dirs=(
 global/iam/ai-roles
 modules/compute/gpu
+modules/kubernetes/ai-node-pools
 )
 
 for d in "${dirs[@]}"; do
@@ -13,6 +14,7 @@ done
 files=(
 global/iam/ai-roles/{data-access.tf,training.tf,inference.tf,mlops-ci.tf}  
 modules/compute/gpu/{main.tf,variables.tf,outputs.tf}
+modules/kubernetes/ai-node-pools/{gpu-pool.tf,cpu-pool.tf,variables.tf,outputs.tf}
 )
 
 for f in "${files[@]}"; do

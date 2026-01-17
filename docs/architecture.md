@@ -1756,6 +1756,86 @@ IAM профиль передаётся сверху (через foundation IAM)
 
 ---
 
+## modules/kubernetes/ai-node-pools/
+
+Выделенные node pools для AI-нагрузок.  
+Жёсткое разделение CPU / GPU / general workloads.
+
+**Состав:**
+
+- `gpu-pool.tf` — node pool для GPU-нагрузок
+- `cpu-pool.tf` — node pool для CPU AI-нагрузок
+- `variables.tf` — параметры пулов, квот и ограничений
+- `outputs.tf` — экспорт идентификаторов node pools
+
+**Решает задачи:**
+- физическое разделение AI и general workloads
+- изоляция GPU и CPU на уровне scheduler
+- контроль размещения и масштабирования AI-нагрузок
+
+**Архитектурная роль:**
+- Foundation-расширение Kubernetes
+- Связывает compute (GPU / CPU), scheduling и security boundaries
+- Не знает ничего про данные, модели и CI
+- Содержит только инфраструктуру и правила размещения
+
+**DevSecOps-смысл `modules/kubernetes/ai-node-pools/`:**
+
+- Разделение GPU и CPU на уровне node pools
+- Taints предотвращают privilege creep
+- Снижение blast radius на уровне scheduler
+- Применение квот по каждому node pool
+- Простой запрет: нет GPU pool → нет training
+- Явная видимость AI compute в кластере
+- Ноды читаются по intent, а не по типу инстанса
+- Привязка compute-зон к region
+- Enforcement locality-политик на уровне инфраструктуры
+
+**Best practices:**
+- AI compute изолирован на уровне нод
+- GPU рассматривается как привилегированный ресурс
+- Исключены случайные AI-нагрузки на app-ноды
+- Безопасность на уровне scheduler, а не договорённостей
+- Чёткое разделение foundation и workload-логики
+
+**Итог:**
+
+`modules/kubernetes/ai-node-pools/`:
+- foundation-контроль AI compute  
+- enforcement до уровня namespace  
+- обязательный слой для sovereign AI
+
+### modules/kubernetes/ai-node-pools/gpu-pool.tf
+
+Назначение
+GPU-ноды только для training / inference.
+
+Пояснение
+taint запрещает случайный scheduling
+только workload с toleration
+GPU — opt-in, не default
+
+### modules/kubernetes/ai-node-pools/cpu-pool.tf
+
+Назначение
+AI-control plane: preprocessing, lightweight inference, ops.
+
+Пояснение
+AI CPU ≠ general workloads
+изоляция от app namespace
+
+### modules/kubernetes/ai-node-pools/variables.tf
+
+Пояснение
+все квоты явные
+никаких auto-magic scaling
+
+### modules/kubernetes/ai-node-pools/outputs.tf
+
+Пояснение
+используются ai/training и ai/inference
+экспортируется контракт, не реализация
+
 
 
 
