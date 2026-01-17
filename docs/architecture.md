@@ -2415,6 +2415,94 @@ AI-specific network restrictions поверх готовой network foundation.
 
 ---
 
+## ai/inference/
+
+Безопасный inference-serving для AI-моделей.  
+Управляет публикацией моделей, кто может вызывать inference, runtime-ограничениями и предотвращает утечки моделей и данных.
+
+**Состав:**
+
+- `namespace.tf` — создание отдельного inference namespace  
+- `access.tf` — контроль platform vs consumer доступов  
+- `network.tf` — ограничение ingress/egress  
+- `runtime.tf` — runtime security constraints  
+- `variables.tf` — параметры namespace, сетей и runtime  
+- `outputs.tf` — экспорт идентификаторов и политик
+
+**Решает задачи:**
+- изоляция inference от training  
+- ограничение публичного доступа  
+- runtime hardening и exploit resistance  
+- подготовка controlled serving environment
+
+**Архитектурная роль:**
+- runtime security слой, не deployment  
+- kubernetes foundation → ai/inference overlay  
+- namespace boundary для sovereign multi-tenant AI
+
+**DevSecOps-смысл `ai/inference/`:**
+- защита модели при исполнении  
+- исключение lateral movement  
+- контроль exposure  
+- audit-friendly execution
+
+**Best practices (reviewer view):**
+- inference изолирован от training  
+- restricted ingress → no public AI  
+- runtime hardening → exploit resistance  
+- namespace boundary → sovereign multi-tenant  
+- serving как controlled surface, не app
+
+**Итог:**
+
+`ai/inference/`:
+- не deployment  
+- не API gateway  
+- secure execution surface для AI inference
+
+### ai/inference/variables.tf
+
+Пояснение:
+– inference не открыт миру
+– доступ задаётся явно
+– environment-aware
+
+### ai/inference/namespace.tf
+
+Пояснение:
+– отдельная serving-зона
+– упрощает audit и policy
+
+### ai/inference/network.tf
+
+Пояснение:
+– доступ только с доверенных CIDR
+– нет open ingress
+– platform-controlled exposure
+
+### ai/inference/runtime.tf
+
+Пояснение:
+– non-root execution
+– запрет privileged pods
+– runtime hardening
+
+### ai/inference/access.tf
+
+Пояснение:
+– потребители не админы
+– минимальные права
+– safe-by-default
+
+### ai/inference/outputs.tf
+
+Пояснение:
+– используется governance
+– используется CI / GitOps
+
+---
+
+
 
 
 

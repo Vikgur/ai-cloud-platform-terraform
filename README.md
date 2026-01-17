@@ -388,6 +388,16 @@ AI-specific network restrictions поверх готовой network foundation.
 
 **3.5 Наполнение ai/inference/**
 
+## ai/inference/
+
+Безопасный inference-serving для AI-моделей.  
+Управляет публикацией моделей, кто может вызывать inference, runtime-ограничениями и предотвращает утечки моделей и данных.
+
+**Решает задачи:**
+- изоляция inference от training  
+- ограничение публичного доступа  
+- runtime hardening и exploit resistance  
+- подготовка controlled serving environment
 
 **4. Sovereign AI слой Governance/enforcement (governance/*)**
 
