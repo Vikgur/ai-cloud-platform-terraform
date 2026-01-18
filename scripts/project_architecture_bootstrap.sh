@@ -32,7 +32,7 @@ README.md
 .terraform-version
 versions.tf
 
-docs/{architecture.md,security-model.md,state-backend.md,workflows.md,break-glass.md,data-flows.md}
+docs/{architecture.md,security-model.md,state-backend.md,workflows.md,break-glass.md,data-flows.md,repository-structure.md}
 
 global/backend/{s3.tf,dynamodb.tf,kms.tf}
 global/iam/{terraform-role.tf,attach.tf,break-glass.tf}
@@ -66,6 +66,7 @@ governance/policy-as-code/opa/{ai-network.rego,ai-data.rego,ai-models.rego,ai-tr
 governance/policy-as-code/terraform/{mandatory-encryption.rego,no-public-ai.rego,region-lock.rego}
 governance/policy-as-code/ci/policy-check.yml
 governance/policy-as-code/README.md
+governance/{audit-rules,exception-workflows,compliance-mappings,decision-logs}/.gitkeep
 
 ci/{terraform-validate.yml,terraform-plan.yml,terraform-apply.yml,security-scan.yml}
 scripts/{init.sh,plan.sh,apply.sh}

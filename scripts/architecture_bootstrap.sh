@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 dirs=(
 docs
@@ -27,7 +27,7 @@ done
 
 files=(
 README.md
-docs/{architecture.md,security-model.md,state-backend.md,workflows.md}
+docs/{architecture.md,security-model.md,state-backend.md,workflows.md,repository-structure.md}
 global/backend/{s3.tf,dynamodb.tf,kms.tf}
 global/iam/terraform-role.tf
 global/iam/policies/{terraform-base.tf,permission-boundary.tf}
@@ -47,14 +47,13 @@ modules/shared/locals.tf
 modules/shared/naming/{locals.tf,variables.tf,outputs.tf}
 modules/shared/tags/{locals.tf,variables.tf,outputs.tf}
 modules/shared/labels/{locals.tf,variables.tf,outputs.tf}
-environments/dev/{backend.tf,providers.tf,main.tf,variables.tf,terraform.tfvars}
-environments/stage/{backend.tf,providers.tf,main.tf,variables.tf,terraform.tfvars}
-environments/prod/{backend.tf,providers.tf,main.tf,variables.tf,terraform.tfvars}
+environments/{dev,stage,prod}/{backend.tf,providers.tf,main.tf,variables.tf,terraform.tfvars}
 policies/opa/terraform/{naming.rego,tagging.rego,encryption.rego,regions.rego,README.md}
 policies/tfsec/tfsec.yml
 policies/checkov/checkov.yml
 ci/{terraform-validate.yml,terraform-plan.yml,terraform-apply.yml,security-scan.yml}
 scripts/{init.sh,plan.sh,apply.sh}
+.gitignore
 .terraform-version
 versions.tf
 )
