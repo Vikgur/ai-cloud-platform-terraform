@@ -41,10 +41,14 @@ global/iam/ai-roles/{data-access.tf,training.tf,inference.tf,mlops-ci.tf}
 global/org-policies/{guardrails.tf,quotas.tf,scp.tf}
 
 modules/{network,security,compute,kubernetes,observability,access}/{main.tf,variables.tf,outputs.tf}
+modules/network/{vpc,subnets,nat,routing}/.gitkeep
+modules/security/{security-groups,nsg,firewall}/.gitkeep
+modules/compute/{master-node,worker-node,autoscaling,launch-templates}/.gitkeep
 modules/compute/gpu/{main.tf,variables.tf,outputs.tf}
 modules/kubernetes/templates/{master_bootstrap.sh,worker_join.sh}
 modules/kubernetes/ai-node-pools/{gpu-pool.tf,cpu-pool.tf,variables.tf,outputs.tf}
 modules/kubernetes/runtime-constraints/{device-plugin.tf,seccomp.tf,variables.tf,outputs.tf}
+modules/kubernetes/{control-plane,node-groups,cni,bootstrap}/.gitkeep
 modules/access/{iam,oidc,rbac}/main.tf
 modules/shared/locals.tf
 modules/shared/{labels,naming,tags}/{locals.tf,variables.tf,outputs.tf}

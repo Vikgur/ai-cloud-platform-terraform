@@ -1,22 +1,494 @@
-# Вступление
+# Оглавление
 
-**Реализованное наполнение репозитория:**
-
-L2-модули (реализовано):
-– описывают архитектуру целиком  
-– оркестрируют L3  
-– экспортируют единые outputs  
-
-L3-модули (частично реализовано):
-– делают конкретные задачи  
-– не знают о всей системе  
-– максимально переиспользуемы  
-
-Пример: для демонстрации enterprise-L3 практик полностью наполнены только модули `modules/access` и `modules/observability`. Остальные L3-модули запланированы к реализации в будущем.
+- [Назначение документа](#назначение-документа)
+- [Архитектурный принцип наполнения репозитория](#архитектурный-принцип-наполнения-репозитория)
+- [Уровни модульности](#уровни-модульности)
+  - [L2-модули (реализованы)](#l2-модули-реализованы)
+  - [L3-модули (частично реализованы)](#l3-модули-частично-реализованы)
+    - [Осознанная неполнота L3-слоя](#осознанная-неполнота-l3-слоя)
+- [Полное описание структуры и файлов репозитория](#полное-описание-структуры-и-файлов-репозитория)
+  - [Корень](#корень)
+  - [docs/](#docs)
+  - [global/](#global)
+    - [global/backend/](#globalbackend)
+    - [global/iam/](#globaliam)
+      - [global/iam/policies/](#globaliampolicies)
+      - [global/iam/ai-roles/](#globaliamai-roles)
+    - [global/org-policies/](#globalorg-policies)
+  - [modules/](#modules)
+    - [modules/network/](#modulesnetwork)
+    - [modules/security/](#modulessecurity)
+    - [modules/compute/](#modulescompute)
+      - [modules/compute/gpu/](#modulescomputegpu)
+    - [modules/kubernetes/](#moduleskubernetes)
+      - [modules/kubernetes/templates/](#moduleskubernetestemplates)
+      - [modules/kubernetes/ai-node-pools/](#moduleskubernetesai-node-pools)
+      - [modules/kubernetes/runtime-constraints/](#moduleskubernetesruntime-constraints)
+    - [modules/storage/](#modulesstorage)
+    - [modules/observability/](#modulesobservability)
+    - [modules/access/](#modulesaccess)
+    - [modules/shared/](#modulesshared)
+      - [modules/shared/labels/](#modulessharedlabels)
+      - [modules/shared/naming/](#modulessharednaming)
+      - [modules/shared/tags/](#modulessharedtags)
+  - [environments/](#environments)
+    - [environments/dev|stage|prod/](#environmentsdevstageprod)
+  - [policies/](#policies)
+    - [policies/opa/terraform/](#policiesopaterraform)
+    - [policies/opa/ai/](#policiesopaai)
+    - [policies/tfsec/](#policiestfsec)
+    - [policies/checkov/](#policiescheckov)
+  - [ai/](#ai)
+    - [ai/network/](#ainetwork)
+    - [ai/data/](#aidata)
+    - [ai/model-registry/](#aimodel-registry)
+    - [ai/training/](#aitraining)
+    - [ai/inference/](#aiinference)
+  - [governance/](#governance)
+    - [governance/policy-as-code/opa/](#governancepolicy-as-codeopa)
+    - [governance/policy-as-code/terraform/](#governancepolicy-as-codeterraform)
+    - [governance/policy-as-code/ci/](#governancepolicy-as-codeci)
+    - [governance/policy-as-code/README.md](#governancepolicy-as-codereadmemd)
+  - [ci/](#ci)
+  - [scripts/](#scripts)
+  - [Вывод](#вывод)
+- [1 этап наполнения: ДО внедрения Sovereign AI-слоя](#1-этап-наполнения-до-внедрения-sovereign-ai-слоя)
+- [2 этап наполнения: внедрение Sovereign AI-слоя](#2-этап-наполнения-внедрение-sovereign-ai-слоя)
 
 ---
 
-# 1 этап: ДО внедрения Sovereign AI-слоя
+# Назначение документа
+
+Данный документ `docs/repository-structure.md` является каноническим и единственным источником правды о структуре репозитория.
+
+Он предназначен для:
+- ревьюеров, оценивающих архитектурные решения и зрелость репозитория;
+- контрибьюторов, вносящих изменения или расширяющих систему;
+- будущего развития репозитория без деградации архитектуры.
+
+Документ описывает структуру **файлов и директорий**, их назначение, какие задачи решаются, архитектурную роль, DevSecOps-смысл, best practicies, краткие пояснения и границы ответственности.  
+
+---
+
+# Архитектурный принцип наполнения репозитория
+
+Структура репозитория построена **по этапам архитектурного наполнения**, а не по принципу «всё сразу».
+
+Это сделано намеренно:
+- для демонстрации эволюции enterprise-инфраструктуры,
+- для сохранения архитектурной чистоты,
+- для возможности масштабирования без рефакторинга структуры.
+
+---
+
+# Уровни модульности
+
+## L2-модули (реализованы)
+
+L2-модули:
+- описывают архитектуру системы целиком;
+- оркестрируют L3-модули;
+- задают границы ответственности и trust boundaries;
+- экспортируют единые, согласованные outputs.
+
+L2 — это уровень **архитектурных решений**, а не конкретных реализаций.
+
+## L3-модули (частично реализованы)
+
+L3-модули:
+- решают одну конкретную задачу;
+- не имеют знания о системе целиком;
+- максимально переиспользуемы;
+- не содержат orchestration-логики.
+
+L3 — это уровень **реализации**, а не архитектуры.
+
+### Осознанная неполнота L3-слоя
+
+Для демонстрации enterprise-практик:
+- полностью реализованы только модули `modules/access` и `modules/observability`;
+- остальные L3-модули **осознанно не реализованы** или представлены минимально.
+
+Это не технический долг, а архитектурное решение:
+- показать паттерны,
+- зафиксировать границы,
+- оставить пространство для дальнейшего расширения без изменения структуры.
+
+Репозиторий готов к масштабированию L3-слоя без изменения L2-архитектуры.
+
+---
+
+# Полное описание структуры и файлов репозитория
+
+Enterprise Terraform для Sovereign AI:
+
+- global — фундамент
+- modules — переиспользуемая логика
+- environments — конфигурация
+- ai — AI-домены
+- governance + policies + ci — DevSecOps и compliance
+
+## Корень
+
+- README.md — назначение репозитория, принципы, порядок работы, требования
+- .gitignore — исключения для Git
+- .terraform-version — фиксированная версия Terraform
+- versions.tf — версии Terraform и провайдеров
+
+---
+
+## docs/
+
+Документация как часть инфраструктуры.
+
+- architecture.md — целевая архитектура и границы модулей
+- security-model.md — threat model, trust boundaries, IAM, сети
+- state-backend.md — Terraform state, locking, шифрование
+- workflows.md — сценарии CI/CD и Terraform
+- break-glass.md — аварийный доступ и процедуры
+- data-flows.md — потоки AI-данных (training, inference, storage)
+- repository-structure.md — описание структуры репозитория
+
+---
+
+## global/
+
+Организационный уровень. Создаётся один раз.
+
+### global/backend/
+
+- s3.tf — S3 bucket для Terraform state
+- dynamodb.tf — DynamoDB locking
+- kms.tf — KMS ключ для шифрования state
+
+### global/iam/
+
+- terraform-role.tf — основная роль Terraform
+- attach.tf — привязка политик к ролям
+- break-glass.tf — аварийная роль
+
+#### global/iam/policies/
+
+- terraform-base.tf — базовые права Terraform
+- permission-boundary.tf — permission boundary
+
+#### global/iam/ai-roles/
+
+- data-access.tf — роли доступа к AI-данным
+- training.tf — роли для training workload
+- inference.tf — роли для inference workload
+- mlops-ci.tf — роли для CI/CD MLOps
+
+### global/org-policies/
+
+- guardrails.tf — организационные ограничения
+- quotas.tf — лимиты ресурсов
+- scp.tf — Service Control Policies
+
+---
+
+## modules/
+
+Переиспользуемая инфраструктурная логика.
+
+### modules/network/
+
+- network/
+  - VPC/.gitkeep — виртуальная сеть  
+  - subnets/.gitkeep — подсети  
+  - NAT/.gitkeep — NAT-шлюзы  
+  - routing/.gitkeep — маршрутизация  
+
+- main.tf — VPC, subnets, routing
+- variables.tf — входные параметры
+- outputs.tf — экспорт значений
+
+### modules/security/
+
+- security/:
+  - security groups/.gitkeep — SG и firewall rules  
+  - NSG/.gitkeep — network security groups  
+  - firewall/.gitkeep — firewall правила 
+
+- main.tf — security groups, firewall
+- variables.tf — входные параметры
+- outputs.tf — экспорт значений
+
+### modules/compute/
+
+- compute/:
+  - master/.gitkeep — control nodes  
+  - worker/.gitkeep — worker ноды  
+  - autoscaling/.gitkeep — автошкалирование  
+  - launch-templates/.gitkeep — шаблоны запуска  
+  - gpu/ — GPU-ноды
+
+- main.tf — compute-ноды
+- variables.tf — входные параметры
+- outputs.tf — экспорт значений
+
+#### modules/compute/gpu/
+
+- main.tf — GPU-инстансы
+- variables.tf — входные параметры
+- outputs.tf — экспорт значений
+
+### modules/kubernetes/
+
+- kubernetes/
+  - control-plane/.gitkeep — API, etcd, control components
+  - node-groups/.gitkeep — worker группы
+  - cni/.gitkeep — сетевой плагин
+  - bootstrap/.gitkeep — первичная инициализация
+  - templates/ — bootstrap и join скрипты
+  - ai-node-pools/ — CPU/GPU пулы под AI-нагрузки
+  - runtime-constraints/ — device plugins, seccomp, runtime policies
+
+- main.tf — базовая логика Kubernetes
+- variables.tf — входные параметры
+- outputs.tf — экспорт значений
+
+#### modules/kubernetes/templates/
+
+- master_bootstrap.sh — bootstrap control-plane
+- worker_join.sh — join worker нод
+
+#### modules/kubernetes/ai-node-pools/
+
+- gpu-pool.tf — GPU node pool
+- cpu-pool.tf — CPU node pool
+- variables.tf — параметры пулов
+- outputs.tf — экспорт
+
+#### modules/kubernetes/runtime-constraints/
+
+- device-plugin.tf — device plugins (GPU)
+- seccomp.tf — seccomp профили
+- variables.tf — входные параметры
+- outputs.tf — экспорт значений
+
+### modules/storage/
+
+- block/.gitkeep — block storage модуль
+- object/.gitkeep — object storage модуль
+- backups/.gitkeep — backup модуль
+
+### modules/observability/
+
+- observability/:
+  - logging/main.tf — логирование  
+  - monitoring/main.tf — мониторинг  
+  - tracing/main.tf — трассировка  
+
+- main.tf — logging, monitoring, tracing
+- variables.tf — входные параметры
+- outputs.tf — экспорт значений
+
+### modules/access/
+
+- access/:
+  - iam/main.tf — IAM интеграция
+  - oidc/main.tf — OIDC провайдеры
+  - rbac/main.tf — Kubernetes RBAC
+
+- main.tf — агрегатор: подключает iam, oidc, rbac
+- variables.tf — входные параметры access-слоя
+- outputs.tf — экспорт идентификаторов и связей доступа
+
+### modules/shared/
+
+- locals.tf — общие локальные переменные
+
+#### modules/shared/labels/
+
+- locals.tf — стандарт labels
+- variables.tf — входные параметры
+- outputs.tf — экспорт значений
+
+#### modules/shared/naming/
+
+- locals.tf — правила именования
+- variables.tf — входные параметры
+- outputs.tf — экспорт значений
+
+#### modules/shared/tags/
+
+- locals.tf — стандарт tags
+- variables.tf — входные параметры
+- outputs.tf — экспорт значений
+
+---
+
+## environments/
+
+Окружения. Только wiring.
+
+### environments/dev|stage|prod/
+
+- backend.tf — подключение backend
+- providers.tf — провайдеры
+- main.tf — wiring модулей
+- variables.tf — переменные окружения
+- terraform.tfvars — значения окружения
+
+Правило:
+- никаких ресурсов
+- только вызовы модулей
+
+---
+
+## policies/
+
+DevSecOps контроль.
+
+### policies/opa/terraform/
+
+- naming.rego — правила именования
+- tagging.rego — обязательные теги
+- encryption.rego — обязательное шифрование
+- regions.rego — разрешённые регионы
+- README.md — описание правил
+
+### policies/opa/ai/
+
+- no-public-ai.rego — запрет публичных AI-ресурсов
+- ai-data-isolation.rego — изоляция данных
+- ai-gpu-restrictions.rego — ограничения GPU
+
+### policies/tfsec/
+
+- tfsec.yml — базовая конфигурация tfsec
+- ai/ai-storage.toml — AI storage правила
+
+### policies/checkov/
+
+- checkov.yml — конфигурация checkov
+- ai/ai_encryption.yaml — AI encryption baseline
+- ai/ai_network.yaml — AI network baseline
+
+---
+
+## ai/
+
+AI-доменные Terraform модули.
+
+### ai/network/
+
+- egress-policy.tf — egress ограничения
+- variables.tf — входные параметры
+- outputs.tf — экспорт значений
+
+### ai/data/
+
+- datasets.tf — датасеты
+- access.tf — доступ к данным
+- encryption.tf — шифрование
+- lifecycle.tf — lifecycle политики
+- variables.tf — входные параметры
+- outputs.tf — экспорт значений
+
+### ai/model-registry/
+
+- models.tf — registry моделей
+- access.tf — доступ
+- encryption.tf — шифрование
+- versioning.tf — версии моделей
+- variables.tf — входные параметры
+- outputs.tf — экспорт значений
+
+### ai/training/
+
+- namespace.tf — namespace
+- quotas.tf — resource quotas
+- network.tf — сетевые политики
+- access.tf — доступ
+- variables.tf — входные параметры
+- outputs.tf — экспорт значений
+
+### ai/inference/
+
+- namespace.tf — namespace
+- access.tf — доступ
+- network.tf — сеть
+- runtime.tf — runtime ограничения
+- variables.tf — входные параметры
+- outputs.tf — экспорт значений
+
+---
+
+## governance/
+
+Управление и принудительный контроль.
+
+- policy-as-code/
+  - opa/ — AI политики (data, network, training, inference, promotion)
+  - terraform/ — обязательные ограничения (encryption, regions)
+  - ci/ — policy enforcement в CI
+- audit-rules/.gitkeep — правила аудита действий
+- exception-workflows/.gitkeep — процессы отклонений и approval
+- compliance-mappings/.gitkeep — соответствие регуляторным требованиям
+- decision-logs/.gitkeep — логи решений и enforcement
+
+### governance/policy-as-code/opa/
+
+- ai-network.rego — сетевые AI правила
+- ai-data.rego — правила данных
+- ai-models.rego — правила моделей
+- ai-training.rego — training политики
+- ai-inference.rego — inference политики
+- ai-promotion.rego — promotion моделей
+
+### governance/policy-as-code/terraform/
+
+- mandatory-encryption.rego — обязательное шифрование
+- no-public-ai.rego — запрет публичных AI
+- region-lock.rego — региональные ограничения
+
+### governance/policy-as-code/ci/
+
+- policy-check.yml — enforcement в CI
+
+### governance/policy-as-code/README.md
+- описание governance и policy-as-code
+
+---
+
+## ci/
+
+CI/CD пайплайны.
+
+- terraform-validate.yml — fmt и validate
+- terraform-plan.yml — plan
+- terraform-apply.yml — apply
+- security-scan.yml — tfsec, checkov, opa
+
+---
+
+## scripts/
+
+Локальная эргономика.
+
+- init.sh — terraform init
+- plan.sh — стандартный plan
+- apply.sh — контролируемый apply
+- architecture_bootstrap.sh — создание структуры каталогов проекта
+- ai_architecture_bootstrap.sh — добавление каталогов проекта под AI
+- project_architecture_bootstrap.sh — итоговый бутстрап структуры каталогов проекта (объединены architecture_bootstrap.sh и ai_architecture_bootstrap.sh)
+
+---
+
+## Вывод
+
+Каждый файл:
+- либо создаёт ресурс
+- либо описывает контракт
+- либо ограничивает поведение
+
+Репозиторий — production-grade Terraform для Sovereign AI и DevSecOps.
+
+---
+
+# 1 этап наполнения: ДО внедрения Sovereign AI-слоя
 
 Базовая Terraform-архитектура cloud-platform для enterprise-уровня на AWS: проектирование и развертывание Kubernetes-кластера (3 master / 50+ worker) с упором на безопасность, масштабируемость, отказоустойчивость и управляемость, без AI-специфичных доменов, но с готовностью к расширению.
 
@@ -1574,7 +2046,7 @@ DevSecOps-смысл scripts/
 
 ---
 
-# 2 этап: внедрение Sovereign AI-слоя
+# 2 этап наполнения: внедрение Sovereign AI-слоя
 
 Поверх базовой платформы добавляется модульный Sovereign AI-слой: изолированные AI-нагрузки, разделение data / training / inference / CI, governance и enforcement-механизмы, обеспечивающие суверенитет данных, минимальный blast radius и соответствие enterprise-требованиям к безопасности и комплаенсу.
 
@@ -2182,7 +2654,7 @@ AI-specific network restrictions поверх готовой network foundation.
 - готовит AI-platform к регуляторике  
 - показывает зрелость работы с data risk
 
-**Best practices (reviewer view):**
+**Best practices:**
 - данные изолированы от infra и кода  
 - mandatory encryption → sovereign baseline  
 - explicit principals → zero implicit trust  
@@ -2446,7 +2918,7 @@ AI-specific network restrictions поверх готовой network foundation.
 - контроль exposure  
 - audit-friendly execution
 
-**Best practices (reviewer view):**
+**Best practices:**
 - inference изолирован от training  
 - restricted ingress → no public AI  
 - runtime hardening → exploit resistance  
@@ -2762,45 +3234,3 @@ CI-уровень enforcement политик.
 Пояснение
 – политики проверяются при каждом PR
 – человек не может обойти guardrails
-
----
-
-
-
-ДОПОЛНИТЬ с учетом добавления папок и файлов Sovereign AI
-### Итоговая картина по всем слоям 
-
-**Документация**  
-- `docs/` — архитектура, модели безопасности, workflows, состояние backend  
-
-**Global слои**  
-- `global/backend` — где хранится state  
-- `global/iam/policies` — кто и как может менять инфраструктуру  
-- `global/org-policies` — что никогда нельзя делать, guardrails и quotas  
-
-**Сеть и безопасность**  
-- `modules/network/{vpc,subnets,nat,routing}` — куда подключаются ноды, маршрутизация  
-- `modules/security/{security-groups,nsg,firewall}` — кто с кем может общаться, ограничения трафика  
-
-**Вычислительные ресурсы и Kubernetes**  
-- `modules/compute/{master-node,worker-node,autoscaling,launch-templates}` — какие ноды существуют и как масштабируются  
-- `modules/kubernetes/{control-plane,node-groups,cni,bootstrap,templates}` — зачем кластеры нужны, как VM объединяются в кластер  
-
-**Хранилище и наблюдаемость**  
-- `modules/storage/{block,object,backups}` — куда и как сохраняются данные  
-- `modules/observability/{logging,monitoring,tracing}` — сбор логов, метрик, трассировка  
-
-**Управление доступом и стандарты**  
-- `modules/access/{iam,oidc,rbac}` — идентификация, SSO, роли, binding’и  
-- `modules/shared/{labels,naming,tags}` — единые стандарты именования и тегирования  
-- `policies/{opa,tfsec,checkov}` — policy-as-code, security и compliance правила  
-
-**Окружения**  
-- `environments/{dev,stage,prod}` — изоляция и конфигурации для разных стадий жизненного цикла  
-
-**CI/CD и скрипты**  
-- `ci/` — пайплайны Terraform и security scan  
-- `scripts/` — вспомогательные скрипты init/plan/apply/infra bootstrap
-
-**GitOps и жизненный цикл**  
-- Сочетание `modules/*`, `environments/*` и `ci/` позволяет кластеру и приложениям жить по GitOps принципам

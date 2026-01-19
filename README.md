@@ -351,16 +351,17 @@ CI — единственная точка истины для изменени�
 
 Рекомендуемый порядок чтения:
 
-1. README.md  
-2. `docs/architecture.md`  
-3. `docs/security-model.md`  
-4. `docs/workflows.md`  
-5. `docs/data-flows.md`  
-6. `docs/break-glass.md`
-7. `docs/state-backend.md`
+1. `README.md` — обзор платформы, цели, классы рисков, как senior DevSecOps использует репозиторий.  
+2. `docs/architecture.md` — принципы дизайна, trust boundaries, слоистая архитектура, rationale, high-level структура.  
+3. `docs/security-model.md` — threat-driven модель, actors, assets, threats, controls, enforcement mapping, explicit non-goals.  
+4. `docs/workflows.md` — жизненный цикл инфраструктуры и AI окружений, promotion boundaries, CI/CD и policy gates.  
+5. `docs/data-flows.md` — end-to-end AI data flows, ownership и access shifts, promotion boundaries, точки применения политик.  
+6. `docs/break-glass.md` — экстренный доступ, audit trail, TTL/time-bound override, процедуры возврата нормальных прав.  
+7. `docs/state-backend.md` — где хранится state, шифрование, versioning, locking, backup/recovery, участие в workflow.  
 
-Подробное описание и назначение всех директорий и файлов:
-`docs/repository-structure.md`
+Подробное описание шагов наполнения репозитория и назначение всех директорий/файлов:  
+
+`docs/repository-structure.md` — L2/L3 модули, policies, scripts, environments, governance, ai, ci, global, modules, scripts с указанием реализованных и частично реализованных компонентов.
 
 ---
 

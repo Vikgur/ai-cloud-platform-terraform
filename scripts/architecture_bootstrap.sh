@@ -37,12 +37,16 @@ global/org-policies/{guardrails.tf,quotas.tf,scp.tf}
 modules/access/{outputs.tf,variables.tf,main.tf}
 modules/access/{iam,oidc,rbac}/main.tf
 modules/network/{outputs.tf,variables.tf,main.tf}
+modules/network/{vpc,subnets,nat,routing}/.gitkeep
 modules/observability/{outputs.tf,variables.tf,main.tf}
 modules/observability/{logging,monitoring,tracing}/main.tf
 modules/security/{outputs.tf,variables.tf,main.tf}
+modules/security/{security-groups,nsg,firewall}/.gitkeep
 modules/compute/{outputs.tf,variables.tf,main.tf}
+modules/compute/{master-node,worker-node,autoscaling,launch-templates}/.gitkeep
 modules/kubernetes/{outputs.tf,variables.tf,main.tf}
 modules/kubernetes/templates/{master_bootstrap.sh,worker_join.sh}
+modules/kubernetes/{control-plane,node-groups,cni,bootstrap}/.gitkeep
 modules/shared/locals.tf
 modules/shared/naming/{locals.tf,variables.tf,outputs.tf}
 modules/shared/tags/{locals.tf,variables.tf,outputs.tf}
